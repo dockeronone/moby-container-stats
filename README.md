@@ -4,6 +4,9 @@
 
 Exposes basic metrics for your containers directly from the moby stats API to a prometheus compatible endpoint. Doing a similar job to the popular cAdvisor application, this is a much more lightweight and simplified design for just the key metrics that people require. It requires less resources to run as an exporter on your hosts, it's also less expensive to store in prometheus. Metrics are obtained through async calls to the moby stats API over the Docker socket. Scrapes can sometimes take up to 2 seconds, this is due to the inherent way moby calculates it's CPU usage at present. Ideally, the work Docker are doing towards native prometheus metrics for containers will render this exporter obsolete.
 
+# Fork modifications
+- Added container status check
+
 ## Configuration
 
 This exporter is setup to take input from environment variables, please make sure you also map in the docker socket to the container, details below.

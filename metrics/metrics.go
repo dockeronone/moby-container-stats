@@ -7,6 +7,13 @@ func Return() map[string]*prometheus.Desc {
 
 	containerMetrics := make(map[string]*prometheus.Desc)
 
+	// Container state indicator
+	containerMetrics["isRunning"] = prometheus.NewDesc(
+		prometheus.BuildFQName("container", "state", "running"),
+		"Indicates if container state is running",
+		[]string{"container_id", "container_name", "container_state", "container_status"}, nil,
+	)
+
 	// CPU Stats
 	containerMetrics["cpuUsagePercent"] = prometheus.NewDesc(
 		prometheus.BuildFQName("container", "cpu", "usage_percent"),

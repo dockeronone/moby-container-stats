@@ -13,6 +13,9 @@ import (
 type ContainerMetrics struct {
 	ID           string
 	Name         string
+	State        string
+	Status       string
+	isRunning    int
 	NetIntefaces map[string]struct {
 		RxBytes   int `json:"rx_bytes"`
 		RxDropped int `json:"rx_dropped"`
@@ -53,7 +56,7 @@ type ContainerMetrics struct {
 func (e *Exporter) asyncRetrieveMetrics() ([]*ContainerMetrics, error) {
 
 	// Create new docker API client for passed down to the async requests
-	cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.WithVersion("1.25"))
 	if err != nil {
 		eLogger.Errorf("Error creating Docker client %v", err)
 		return nil, err
@@ -85,10 +88,10 @@ func (e *Exporter) asyncRetrieveMetrics() ([]*ContainerMetrics, error) {
 	// Done due to there not yet being a '--all' option for the cli.ContainerMetrics function in the engine
 	for _, c := range containers {
 
-		go func(cli *client.Client, id, name string) {
-			retrieveContainerMetrics(*cli, id, name, ch)
+		go func(cli *client.Client, id, name string, state string, status string) {
+			retrieveContainerMetrics(*cli, id, name, state, status, ch)
 
-		}(cli, c.ID, c.Names[0][1:])
+		}(cli, c.ID, c.Names[0][1:], c.State, c.Status)
 
 	}
 
@@ -107,7 +110,7 @@ func (e *Exporter) asyncRetrieveMetrics() ([]*ContainerMetrics, error) {
 
 }
 
-func retrieveContainerMetrics(cli client.Client, id, name string, ch chan<- *ContainerMetrics) {
+func retrieveContainerMetrics(cli client.Client, id, name string, state string, status string, ch chan<- *ContainerMetrics) {
 
 	stats, err := cli.ContainerStats(context.Background(), id, false)
 	if err != nil {
@@ -131,6 +134,14 @@ func retrieveContainerMetrics(cli client.Client, id, name string, ch chan<- *Con
 		// so we can correctly report on the container when looping through later
 		c.ID = id
 		c.Name = name
+		c.State = state
+		c.Status = status
+
+		if state == "running" {
+			c.isRunning = 1
+		} else {
+			c.isRunning = 0
+		}
 
 		ch <- c
 	}

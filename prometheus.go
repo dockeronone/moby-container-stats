@@ -36,6 +36,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 // setPrometheusMetrics takes the pointer to ContainerMetrics and uses the data to set the guages and counters
 func (e *Exporter) setPrometheusMetrics(stats *ContainerMetrics, ch chan<- prometheus.Metric) {
+	// Set State metrics
+	ch <- prometheus.MustNewConstMetric(e.containerMetrics["isRunning"], prometheus.GaugeValue, float64(stats.isRunning), stats.ID, stats.Name, stats.State, stats.Status)
 
 	// Set CPU metrics
 	ch <- prometheus.MustNewConstMetric(e.containerMetrics["cpuUsagePercent"], prometheus.GaugeValue, calcCPUPercent(stats), stats.ID, stats.Name)
