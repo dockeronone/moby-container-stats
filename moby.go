@@ -67,7 +67,7 @@ func (e *Exporter) asyncRetrieveMetrics() ([]*ContainerMetrics, error) {
 
 	// Obtain a list of running containers only
 	// Docker stats API won't return stats for containers not in the running state
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
 		eLogger.Errorf("Error obtaining container listing: %v", err)
 		return nil, err
